@@ -306,6 +306,29 @@ Resources:
             HealthCheckGracePeriod: 300
             LoadBalancerNames:
                 - !Ref ApplicationLoadBalancer
+    
+    AsgLaunchTemplate:
+        Type: AWS::EC2::LaunchTemplate
+        Properties:
+            LaunchTemplateName: !Sub ${AWS::StackName}-launch-template
+            LaunchTemplateData:
+                CreditSpecification:
+                CpuCredits: Unlimited
+                ImageId: !Ref LatestAmiId
+                InstanceType: !Ref InstanceType
+                KeyName: AutoScaleLaunchTemplate
+                Monitoring:
+                Enabled: True
+                SecurityGroupIds:
+                - !Ref WebServerSecurityGroup
+                UserData:
+                Fn::Base64: |
+                    #!/bin/bash -xe
+        
+                    yum update -y
+                    yum install -y httpd24
+                    echo "Welcome from the instance $(hostname -f)" > /var/www/html/index.html
+                    service httpd start
 
     # LoadBalancerforEC2:
     #     Type: AWS::ElasticLoadBalancing::LoadBalancer
