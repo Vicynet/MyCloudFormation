@@ -307,10 +307,10 @@ Resources:
             LoadBalancerNames:
                 - !Ref ApplicationLoadBalancer
     
-    AsgLaunchTemplate:
+    AutoScalingGroupLaunchTemplate:
         Type: AWS::EC2::LaunchTemplate
         Properties:
-            LaunchTemplateName: !Sub ${AWS::StackName}-launch-template
+            LaunchTemplateName: AutoScalingGroupLaunchTemplate
             LaunchTemplateData:
                 CreditSpecification:
                 CpuCredits: Unlimited
@@ -320,15 +320,14 @@ Resources:
                 Monitoring:
                 Enabled: True
                 SecurityGroupIds:
-                - !Ref WebServerSecurityGroup
+                - !Ref InstanceSecurityGroup
                 UserData:
-                Fn::Base64: |
-                    #!/bin/bash -xe
-        
-                    yum update -y
-                    yum install -y httpd24
-                    echo "Welcome from the instance $(hostname -f)" > /var/www/html/index.html
-                    service httpd start
+                    Fn::Base64: !Sub |
+                        #!/bin/bash
+                        sudo apt-get update -y
+                        sudo apt-get install apache2 -y
+                        sudo systemctl start apache2.service
+                        echo "Welcome from the instance $(hostname -f)" > /var/www/html/index.html
 
     # LoadBalancerforEC2:
     #     Type: AWS::ElasticLoadBalancing::LoadBalancer
